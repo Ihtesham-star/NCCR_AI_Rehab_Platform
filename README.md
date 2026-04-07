@@ -1,5 +1,7 @@
 # NCCR AI Rehabilitation Platform
 
+**Astana, Kazakhstan**
+
 An AI-powered clinical platform for assessing motor and cognitive function in children with disabilities, built for the **National Center for Children's Rehabilitation (NCCR)**. The system ingests multimodal clinical data, runs automated assessments, and generates personalized rehabilitation recommendations.
 
 ---
@@ -174,4 +176,4 @@ Full interactive docs at `http://localhost:8000/docs`
 
 ## License
 
-Proprietary — National Center for Children's Rehabilitation, Kazakhstan.
+Proprietary — National Center for Children's Rehabilitation, Astana, Kazakhstan.
