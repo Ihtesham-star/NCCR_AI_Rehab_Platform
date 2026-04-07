@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NCCR Rehabilitation Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 NCCR Rehabilitation Platform</h1>
+                <p>AI-Powered Motor & Cognitive Assessment System</p>
+            </div>
+            <div>
+                <button class="btn btn-outline" style="color: white; border-color: white;" onclick="window.location.href='/docs'">
+                    📚 API Docs
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">📊 Dashboard</a></li>
+                <li><a href="patients.html">👥 Patients</a></li>
+                <li><a href="import.html">📤 Import Data</a></li>
+                <li><a href="assessments.html">📋 Assessments</a></li>
+                <li><a href="reports.html">📈 Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-label">Total Patients</div>
+                <div class="stat-value" id="total-patients">-</div>
+                <div class="stat-change positive">Active records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Assessments Completed</div>
+                <div class="stat-value" id="total-assessments">-</div>
+                <div class="stat-change">AI-powered analysis</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-label">EMG Sessions</div>
+                <div class="stat-value" id="emg-sessions">-</div>
+                <div class="stat-change">Muscle activity data</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-label">Balance Tests</div>
+                <div class="stat-value" id="balance-tests">-</div>
+                <div class="stat-change">Stability assessments</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">🚀 Quick Actions</h2>
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="window.location.href='import.html'" class="btn btn-primary btn-lg">
+                    📤 Import New Data
+                </button>
+                <button onclick="window.location.href='patients.html'" class="btn btn-success btn-lg">
+                    👤 Add New Patient
+                </button>
+                <button onclick="window.location.href='assessments.html'" class="btn btn-outline btn-lg">
+                    📋 View All Assessments
+                </button>
+                <button onclick="window.location.href='reports.html'" class="btn btn-outline btn-lg">
+                    📈 Generate Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Patients -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">👥 Recent Patients</h2>
+                <button onclick="window.location.href='patients.html'" class="btn btn-primary">
+                    View All
+                </button>
+            </div>
+            <div class="table-container" id="recent-patients">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>GMFCS Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">⚙️ System Status</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <div class="stat-label">Database</div>
+                    <span class="badge badge-success">✓ Connected</span>
+                </div>
+                <div>
+                    <div class="stat-label">AI Engine</div>
+                    <span class="badge badge-success">✓ Active</span>
+                </div>
+                <div>
+                    <div class="stat-label">Data Processing</div>
+                    <span class="badge badge-success">✓ Running</span>
+                </div>
+                <div>
+                    <div class="stat-label">API Status</div>
+                    <span class="badge badge-success">✓ Online</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

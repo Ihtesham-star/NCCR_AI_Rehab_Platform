@@ -1,0 +1,79 @@
+# Core Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+
+# Streamlit UI (Fast, User-Friendly Interface)
+streamlit
+requests
+
+# Database
+sqlalchemy
+alembic
+psycopg2-binary
+asyncpg
+
+# Data Processing
+pandas
+numpy
+openpyxl
+xlrd
+
+# PDF Processing
+PyPDF2
+pdfplumber
+pypdf
+pdf2image
+
+# Machine Learning & AI
+scikit-learn
+tensorflow
+torch
+scipy
+statsmodels
+anthropic
+
+# Data Visualization
+matplotlib
+seaborn
+plotly
+
+# Signal Processing (for EMG)
+scipy
+# pywt==1.5.0  # Optional - skip if installation fails
+
+# API & Authentication
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+aiofiles
+
+# Utilities
+python-dotenv
+python-dateutil
+pytz
+tqdm
+psutil
+
+# Validation & Testing
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+
+# Logging & Monitoring
+loguru
+
+# Excel & Data Export
+reportlab
+pillow
+
+# Security
+cryptography
+
+# CORS - built into FastAPI, no separate package needed
+
+# Environment
+python-decouple

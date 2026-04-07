@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - NCCR Rehabilitation Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 NCCR Rehabilitation Platform</h1>
+                <p>AI-Powered Motor & Cognitive Assessment System</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <ul class="nav-links">
+                <li><a href="index.html">📊 Dashboard</a></li>
+                <li><a href="patients.html">👥 Patients</a></li>
+                <li><a href="import.html">📤 Import Data</a></li>
+                <li><a href="assessments.html">📋 Assessments</a></li>
+                <li><a href="reports.html" class="active">📈 Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">📈 Reports & Analytics</h2>
+            </div>
+            <p style="color: var(--text-gray); margin-bottom: 2rem;">
+                Generate comprehensive reports and visualizations for patient progress tracking and clinical insights.
+            </p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Available Report Types</div>
+                    <div class="stat-value">4</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Data Export Formats</div>
+                    <div class="stat-value">3</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">Visualization Charts</div>
+                    <div class="stat-value">12+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card fade-in">
+            <h3 style="margin-bottom: 1.5rem;">📊 Report Options</h3>
+            <div style="display: grid; gap: 1.5rem;">
+                <div style="padding: 1.5rem; background: var(--bg-light); border-radius: 0.5rem; border: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem;">👤 Individual Patient Report</h4>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">Comprehensive assessment results, progress tracking, and rehabilitation recommendations for a single patient.</p>
+                    <button class="btn btn-primary" onclick="alert('Select a patient from the Patients page to generate their report')">
+                        Generate Patient Report
+                    </button>
+                </div>
+
+                <div style="padding: 1.5rem; background: var(--bg-light); border-radius: 0.5rem; border: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem;">📊 Population Statistics</h4>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">Aggregate statistics across all patients including disability distribution, GMFCS levels, and outcome metrics.</p>
+                    <button class="btn btn-primary" onclick="alert('Coming soon: Population analytics dashboard')">
+                        View Population Stats
+                    </button>
+                </div>
+
+                <div style="padding: 1.5rem; background: var(--bg-light); border-radius: 0.5rem; border: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem;">📈 Progress Tracking</h4>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">Longitudinal analysis showing patient improvement over time with comparative visualizations.</p>
+                    <button class="btn btn-primary" onclick="alert('Select a patient to view their progress timeline')">
+                        Track Progress
+                    </button>
+                </div>
+
+                <div style="padding: 1.5rem; background: var(--bg-light); border-radius: 0.5rem; border: 2px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.75rem;">💾 Data Export</h4>
+                    <p style="color: var(--text-gray); margin-bottom: 1rem;">Export raw data, assessment results, and recommendations in Excel, PDF, or CSV formats.</p>
+                    <button class="btn btn-success" onclick="alert('Export functionality available via API at /api/export')">
+                        Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card fade-in" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-left: 4px solid var(--secondary-color);">
+            <h3 style="margin-bottom: 1rem;">💡 Report Features</h3>
+            <ul style="margin-left: 1.5rem; line-height: 2;">
+                <li><strong>Visual Charts:</strong> Interactive graphs for EMG, balance, and functional metrics</li>
+                <li><strong>AI Insights:</strong> Automated interpretation of assessment results</li>
+                <li><strong>Comparative Analysis:</strong> Benchmark against normative data</li>
+                <li><strong>Rehabilitation Tracking:</strong> Monitor compliance and outcomes</li>
+                <li><strong>Clinical Notes:</strong> Integrated documentation and observations</li>
+                <li><strong>Print & Share:</strong> Professional PDF reports for stakeholders</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - NCCR Rehabilitation Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 NCCR Rehabilitation Platform</h1>
+                <p>AI-Powered Motor & Cognitive Assessment System</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <ul class="nav-links">
+                <li><a href="index.html">📊 Dashboard</a></li>
+                <li><a href="patients.html" class="active">👥 Patients</a></li>
+                <li><a href="import.html">📤 Import Data</a></li>
+                <li><a href="assessments.html">📋 Assessments</a></li>
+                <li><a href="reports.html">📈 Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Patient Management -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">👥 All Patients</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="search-patients" placeholder="🔍 Search patients..." 
+                           class="form-input" style="width: 300px;">
+                    <button onclick="deleteAllPatients()" class="btn" style="background: #ef4444; color: white;">
+                        🗑️ Delete All
+                    </button>
+                    <button onclick="openAddPatientModal()" class="btn btn-success">
+                        ➕ Add Patient
+                    </button>
+                </div>
+            </div>
+            <div class="table-container" id="all-patients">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Sex</th>
+                            <th>Date of Birth</th>
+                            <th>GMFCS Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Patient Modal -->
+        <div id="add-patient-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>➕ Add New Patient</h3>
+                    <button class="modal-close" onclick="closeAddPatientModal()">&times;</button>
+                </div>
+                <form id="add-patient-form" onsubmit="submitNewPatient(event)">
+                    <div class="form-group">
+                        <label class="form-label">Patient ID *</label>
+                        <input type="text" class="form-input" name="patient_id" required placeholder="e.g., PAT001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" name="name" required placeholder="e.g., John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth *</label>
+                        <input type="date" class="form-input" name="date_of_birth" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sex</label>
+                        <select class="form-select" name="sex">
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Height (cm)</label>
+                        <input type="number" class="form-input" name="height_cm" step="0.1" placeholder="e.g., 120.5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" class="form-input" name="weight_kg" step="0.1" placeholder="e.g., 35.2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GMFCS Level</label>
+                        <select class="form-select" name="gmfcs_level">
+                            <option value="">Select...</option>
+                            <option value="1">Level I - Walks without limitations</option>
+                            <option value="2">Level II - Walks with limitations</option>
+                            <option value="3">Level III - Walks with assistive devices</option>
+                            <option value="4">Level IV - Self-mobility with limitations</option>
+                            <option value="5">Level V - Transported in manual wheelchair</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Diagnosis</label>
+                        <textarea class="form-input" name="diagnosis" rows="3" placeholder="Enter diagnosis..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" onclick="closeAddPatientModal()" class="btn btn-outline">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            ✓ Add Patient
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        function openAddPatientModal() {
+            document.getElementById('add-patient-modal').classList.add('active');
+        }
+
+        function closeAddPatientModal() {
+            document.getElementById('add-patient-modal').classList.remove('active');
+            document.getElementById('add-patient-form').reset();
+        }
+
+        async function submitNewPatient(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                if (value) {
+                    if (key === 'gmfcs_level' || key === 'height_cm' || key === 'weight_kg') {
+                        data[key] = parseFloat(value);
+                    } else if (key === 'date_of_birth') {
+                        data[key] = new Date(value).toISOString();
+                    } else {
+                        data[key] = value;
+                    }
+                }
+            });
+
+            try {
+                const response = await fetch('http://localhost:8000/api/patients/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Failed to add patient');
+
+                showAlert('Patient added successfully!', 'success');
+                closeAddPatientModal();
+                loadAllPatients();
+            } catch (error) {
+                showAlert('Failed to add patient. Please try again.', 'danger');
+            }
+        }
+
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-patients');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll('#all-patients tbody tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

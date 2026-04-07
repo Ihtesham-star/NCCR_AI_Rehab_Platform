@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Data - NCCR Rehabilitation Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🏥 NCCR Rehabilitation Platform</h1>
+                <p>AI-Powered Motor & Cognitive Assessment System</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-content">
+            <ul class="nav-links">
+                <li><a href="index.html">📊 Dashboard</a></li>
+                <li><a href="patients.html">👥 Patients</a></li>
+                <li><a href="import.html" class="active">📤 Import Data</a></li>
+                <li><a href="assessments.html">📋 Assessments</a></li>
+                <li><a href="reports.html">📈 Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="alert alert-info">
+            <strong>📌 Instructions:</strong> Click or drag & drop files into the upload areas below. The system will automatically extract patient data and store it in the database.
+        </div>
+
+        <!-- EMG Data Upload -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">💪 EMG Data (Noraxon PDFs)</h2>
+            </div>
+            <div class="upload-area" id="emg-upload-area">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click or drag EMG PDF files here</div>
+                <div class="upload-hint">Supported: Noraxon EMG reports (.pdf)</div>
+                <input type="file" id="emg-file-input" accept=".pdf" style="display: none;" multiple>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 0.375rem;">
+                <strong>📋 Expected Data:</strong> Muscle activation patterns, RMS values, force measurements
+            </div>
+        </div>
+
+        <!-- Balance Test Upload -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">⚖️ Balance Test Data (TecnoBody PDFs)</h2>
+            </div>
+            <div class="upload-area" id="balance-upload-area">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Click or drag Balance Test PDF files here</div>
+                <div class="upload-hint">Supported: TecnoBody Prokins balance reports (.pdf)</div>
+                <input type="file" id="balance-file-input" accept=".pdf" style="display: none;" multiple>
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 0.375rem;">
+                <strong>📋 Expected Data:</strong> Stability index, trunk sway, sector percentage, area coverage
+            </div>
+        </div>
+
+        <!-- Clinical Data Upload -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">📊 Clinical Test Data (Excel)</h2>
+            </div>
+            <div class="upload-area" id="clinical-upload-area">
+                <div class="upload-icon">📊</div>
+                <div class="upload-text">Click or drag Excel files here</div>
+                <div class="upload-hint">Supported: Clinical test data (.xlsx, .xls)</div>
+                <input type="file" id="clinical-file-input" accept=".xlsx,.xls" style="display: none;">
+            </div>
+            <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 0.375rem;">
+                <strong>📋 Expected Data:</strong> 6MWT, 10MWT, TUG, GMFM scores, patient demographics
+            </div>
+        </div>
+
+        <!-- Upload History -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h2 class="card-title">📜 Upload History</h2>
+            </div>
+            <div class="alert alert-success" style="display: none;" id="upload-success">
+                Files uploaded successfully!
+            </div>
+            <div id="upload-history">
+                <p style="text-align: center; color: var(--text-gray); padding: 2rem;">
+                    No uploads yet. Upload files above to get started.
+                </p>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card fade-in" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid var(--primary-color);">
+            <h3 style="margin-bottom: 1rem;">💡 Tips for Importing Data</h3>
+            <ul style="margin-left: 1.5rem; line-height: 2;">
+                <li><strong>EMG PDFs:</strong> Upload Noraxon reports containing muscle activation data</li>
+                <li><strong>Balance PDFs:</strong> Upload TecnoBody Prokins stability test results</li>
+                <li><strong>Clinical Excel:</strong> Upload spreadsheets with 6MWT, 10MWT, TUG, and GMFM scores</li>
+                <li><strong>Multiple Files:</strong> You can upload multiple files at once by selecting them together</li>
+                <li><strong>Auto-Processing:</strong> Data is automatically processed and linked to patient records</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
