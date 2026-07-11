@@ -442,14 +442,14 @@ def upload_pdf_any(file, use_claude_ai=True):
                 f"{API_BASE}/import/pdf/claude",
                 files=files,
                 params={"language": language},
-                timeout=60
+                timeout=120
             )
         else:
             # Try standard parsers
-            response = requests.post(f"{API_BASE}/import/emg/pdf", files=files, timeout=60)
+            response = requests.post(f"{API_BASE}/import/emg/pdf", files=files, timeout=120)
             if response.status_code != 200:
-                response = requests.post(f"{API_BASE}/import/balance/pdf", files=files, timeout=60)
- 
+                response = requests.post(f"{API_BASE}/import/balance/pdf", files=files, timeout=120)
+
         if response.status_code == 200:
             return True, response.json()
         else:
@@ -490,7 +490,7 @@ def upload_clinical_excel(file, use_claude_ai=True):
             f"{API_BASE}{endpoint}",
             files=files,
             params={"language": language},
-            timeout=60
+            timeout=120
         )
         if response.status_code == 200:
             return True, response.json()
@@ -515,7 +515,7 @@ def generate_assessment(patient_id, use_claude_ai=True):
         response = requests.post(
             f"{API_BASE}{endpoint}",
             params={"language": language},
-            timeout=60
+            timeout=120
         )
         
         if response.status_code == 200:
@@ -1722,7 +1722,7 @@ elif page == "📋 Assessments" or page == "Assessments":
                         success_text = "✅ Оценка завершена!" if st.session_state.language == 'ru' else "✅ Assessment completed!"
                         st.success(success_text)
                         st.json(result)
-                        st.cache_data.clear()  # Clear cache
+                        st.cache_data.clear()
                     else:
                         error_text = f"❌ Ошибка: {result}" if st.session_state.language == 'ru' else f"❌ Failed: {result}"
                         st.error(error_text)
@@ -1751,6 +1751,40 @@ elif page == "📋 Assessments" or page == "Assessments":
                         st.warning(warning_text)
                 except Exception as e:
                     st.error(f"{t('error')}: {str(e)}")
+
+        # RAG Search Section - inside if patients block
+        st.markdown("---")
+        search_title = "### 🔍 Поиск по документам пациента" if st.session_state.language == 'ru' else "### 🔍 Search Patient Documents"
+        st.markdown(search_title)
+
+        search_placeholder = "Например: какой диагноз у пациента?" if st.session_state.language == 'ru' else "e.g. what is the diagnosis of this patient?"
+        search_query = st.text_input("Search", placeholder=search_placeholder, key="rag_search", label_visibility="collapsed")
+
+        search_btn = "🔍 Найти" if st.session_state.language == 'ru' else "🔍 Search"
+        if st.button(search_btn, type="primary") and search_query and selected:
+            with st.spinner("Searching documents..." if st.session_state.language == 'en' else "Поиск в документах..."):
+                try:
+                    response = requests.post(
+                        f"{API_BASE}/assessments/{selected}/search",
+                        params={"query": search_query},
+                        timeout=30
+                    )
+                    if response.status_code == 200:
+                        result = response.json()
+                        chunks = result.get('chunks_found', 0)
+                        if chunks == 0:
+                            st.warning("No relevant documents found for this patient." if st.session_state.language == 'en' else "Документы для этого пациента не найдены.")
+                        else:
+                            st.success(f"Found answer from {chunks} document sections")
+                            st.markdown("#### Answer:")
+                            st.markdown(result.get('answer', ''))
+                            confidence = result.get('confidence', 0)
+                            st.caption(f"Search confidence: {confidence:.2f} | Sections searched: {chunks}")
+                    else:
+                        st.error("Search failed")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+
     else:
         warning_text = "⚠️ Пациенты не найдены. Пожалуйста, сначала импортируйте данные." if st.session_state.language == 'ru' else "⚠️ No patients found. Please import data first."
         st.warning(warning_text)

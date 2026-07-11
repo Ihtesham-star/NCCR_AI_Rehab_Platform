@@ -364,7 +364,7 @@ IMPORTANT: Base your assessment on the ACTUAL clinical data provided. Be realist
             'time_10mwt_seconds': latest_clinical.time_10mwt_seconds,
             'tug_time_seconds': latest_clinical.tug_time_seconds
         }
-        clinical_analysis = motor_analyzer.analyze_clinical_tests(clinical_data)
+        clinical_analysis = motor_analyzer.analyze_clinical_tests(clinical_data, gmfcs_level=patient.gmfcs_level)
     
     # Calculate disability index
     disability_assessment = disability_quantifier.calculate_disability_index(
@@ -387,7 +387,7 @@ IMPORTANT: Base your assessment on the ACTUAL clinical data provided. Be realist
         assessment_date=datetime.utcnow(),
         motor_function_score=emg_analysis.get('muscle_coordination_score'),
         muscle_coordination_score=emg_analysis.get('muscle_coordination_score'),
-        gait_quality_score=clinical_analysis.get('mobility_score'),
+        gait_quality_score=None,  # No validated pediatric TUG-based gait score exists — see analytics/motor_assessment.py docstring. Raw TUG time is preserved in clinical_analysis['tug_raw_time_seconds'] within detailed_results below.
         balance_score=balance_analysis.get('balance_score'),
         cognitive_function_score=cognitive_assessment.get('cognitive_function_score'),
         attention_score=cognitive_assessment.get('attention_score'),
@@ -656,3 +656,78 @@ async def delete_patient_assessments(patient_id: str, db: Session = Depends(get_
         "message": f"Deleted {deleted_count} assessment(s) for patient {patient_id}",
         "deleted_count": deleted_count
     }
+
+@router.post("/{patient_id}/search")
+async def search_patient_documents(
+    patient_id: str,
+    query: str,
+    db: Session = Depends(get_db)
+):
+    """Search patient documents using RAG and answer with Claude"""
+    
+    # Get patient
+    patient = db.query(Patient).filter(Patient.patient_id == patient_id).first()
+    if not patient:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Patient {patient_id} not found"
+        )
+    
+    # Import RAG engine
+    from utils.rag_engine import search_chunks
+    
+    # Search relevant chunks for this patient
+    chunks = search_chunks(db, query=query, patient_id=patient.id, top_k=3)
+    
+    if not chunks:
+        return {
+            "answer": "No relevant information found in this patient's documents.",
+            "query": query,
+            "patient_id": patient_id,
+            "chunks_found": 0
+        }
+    
+    # Build context from chunks
+    context = "\n\n".join([c['chunk_text'] for c in chunks])
+    
+    # Ask Claude to answer using only the retrieved chunks
+    prompt = f"""You are a medical AI assistant. Answer the doctor's question using ONLY the provided patient document excerpts.
+
+PATIENT DOCUMENT EXCERPTS:
+{context}
+
+DOCTOR'S QUESTION: {query}
+
+INSTRUCTIONS:
+- Answer directly and concisely
+- If the information is not in the excerpts, say "This information was not found in the available documents"
+- Extract specific numbers and dates when relevant
+- Keep answer under 150 words
+
+ANSWER:"""
+
+    try:
+        response = claude_ai.client.messages.create(
+            model=claude_ai.model,
+            max_tokens=300,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        
+        answer = response.content[0].text.strip()
+        
+        return {
+            "answer": answer,
+            "query": query,
+            "patient_id": patient_id,
+            "chunks_found": len(chunks),
+            "confidence": round(chunks[0]['similarity'], 3)
+        }
+        
+    except Exception as e:
+        return {
+            "answer": f"Search completed but AI response failed: {str(e)}",
+            "query": query,
+            "patient_id": patient_id,
+            "chunks_found": len(chunks),
+            "raw_context": context[:500]
+        }

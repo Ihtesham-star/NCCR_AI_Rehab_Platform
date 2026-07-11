@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from database.connection import get_db
 from database.models import Patient, ClinicalTest, EMGSession, BalanceTest
@@ -25,6 +26,13 @@ class PatientCreate(BaseModel):
     gmfcs_level: Optional[int] = None
     diagnosis: Optional[str] = None
 
+    @field_validator('gmfcs_level')
+    @classmethod
+    def validate_gmfcs_level(cls, v):
+        if v is not None and not (v >= 1 and v <= 5):
+            raise ValueError('GMFCS level must be between 1 and 5')
+        return v
+
 
 class PatientResponse(BaseModel):
     id: int
@@ -36,6 +44,13 @@ class PatientResponse(BaseModel):
     weight_kg: Optional[float]
     gmfcs_level: Optional[int]
     diagnosis: Optional[str]
+    @field_validator('gmfcs_level')
+    @classmethod
+    def validate_gmfcs_level(cls, v):
+        if v is not None and not (v >= 1 and v <= 5):
+            raise ValueError('GMFCS level must be between 1 and 5')
+        return v
+
     created_at: datetime
     
     class Config:

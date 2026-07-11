@@ -31,6 +31,8 @@ class Patient(Base):
     balance_tests = relationship("BalanceTest", back_populates="patient", cascade="all, delete-orphan")
     assessments = relationship("Assessment", back_populates="patient", cascade="all, delete-orphan")
     recommendations = relationship("RehabRecommendation", back_populates="patient", cascade="all, delete-orphan")
+    clinical_documents = relationship("ClinicalDocument", back_populates="patient", cascade="all, delete-orphan")
+    document_chunks = relationship("DocumentChunk", back_populates="patient", cascade="all, delete-orphan")
 
 
 class ClinicalTest(Base):
@@ -242,7 +244,7 @@ class ClinicalDocument(Base):
     __tablename__ = "clinical_documents"
     
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     
     # Document metadata
     document_type = Column(String(100))  # 'rehabilitation_discharge', 'admission', 'progress_note', etc.
@@ -287,7 +289,23 @@ class ClinicalDocument(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
-    patient = relationship("Patient")
+    patient = relationship("Patient", back_populates="clinical_documents")
+
+
+class DocumentChunk(Base):
+    """Stores text chunks and vector embeddings for RAG search"""
+    __tablename__ = "document_chunks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    source_type = Column(String(50))  # 'discharge_summary', 'emg_report', 'balance_report'
+    chunk_text = Column(Text, nullable=False)  # actual text piece
+    chunk_index = Column(Integer)  # which chunk number (1st, 2nd, 3rd...)
+    embedding = Column(JSON)  # vector as list of numbers
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationship
+    patient = relationship("Patient", back_populates="document_chunks")    
 
 
 class User(Base):

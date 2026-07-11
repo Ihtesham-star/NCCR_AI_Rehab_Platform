@@ -7,6 +7,7 @@ from typing import List
 from datetime import datetime
 import os
 import shutil
+import pdfplumber
 
 from database.connection import get_db
 from database.models import Patient, EMGSession, EMGData, BalanceTest, ClinicalTest, ClinicalDocument
@@ -15,6 +16,7 @@ from data_ingestion.balance_parser import parse_balance_pdf
 from data_ingestion.excel_parser import parse_clinical_excel
 from config.settings import settings
 from utils.claude_ai import claude_ai
+from utils.rag_engine import store_document_chunks
 from api.assessments import generate_assessment  # Import assessment generator
 
 router = APIRouter()
@@ -214,6 +216,14 @@ async def import_pdf_with_claude(
     file_path = os.path.join(settings.PDF_STORAGE_PATH, file.filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    # Extract PDF text for RAG storage
+    pdf_text = ""
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                pdf_text += text + "\n\n"
     
     try:
         print(f"🤖 Using Claude AI to parse PDF: {file.filename}")
@@ -397,6 +407,20 @@ async def import_pdf_with_claude(
         else:
             # Generic clinical data - Store comprehensive extracted data
             print(f"📋 Storing comprehensive clinical document data...")
+
+            existing_doc = db.query(ClinicalDocument).filter(
+                ClinicalDocument.patient_id == patient.id,
+                ClinicalDocument.filename == file.filename
+            ).first()
+            if existing_doc:
+                print(f"⚠️ Clinical document already exists for this patient and filename. Skipping creation.")
+                return {
+                    "message": "Clinical document already exists",
+                    "patient_name": patient.name,
+                    "patient_id": patient.patient_id,
+                    "existing_clinical_document_id": existing_doc.id,
+                    "filename": file.filename
+                }
             
             # Extract structured data from Claude's response
             patient_info = data.get('patient_info', {})
@@ -469,6 +493,39 @@ async def import_pdf_with_claude(
             db.refresh(clinical_doc)
             
             print(f"✅ Clinical document saved (ID: {clinical_doc.id})")
+
+            # Store document chunks for RAG search
+            if pdf_text:
+                store_document_chunks(
+                    db=db,
+                    patient_id=patient.id,
+                    text=pdf_text,
+                    source_type=doc_type
+                )
+                print(f"✅ Document chunks stored for RAG")
+
+                # Run LangGraph agent in shadow mode - validate extraction
+            # # Run LangGraph agent in shadow mode
+            if pdf_text:
+                try:
+                    import asyncio
+                    from utils.nccr_agent import process_document_with_agent
+                    loop = asyncio.get_event_loop()
+                    agent_result = await loop.run_in_executor(
+                        None, process_document_with_agent, pdf_text
+                    )
+                    claude_name = patient.name
+                    agent_name = agent_result.get('patient_name')
+                    if agent_name and claude_name and agent_name != claude_name:
+                        print(f"⚠️ Shadow mode difference - Name: Claude='{claude_name}' Agent='{agent_name}'", flush=True)
+                    else:
+                        print(f"✅ Shadow mode match - Agent validated extraction", flush=True)
+                    warnings = agent_result.get('validation_warnings', [])
+                    if warnings:
+                        print(f"⚠️ Agent validation warnings: {warnings}", flush=True)
+                    print(f"🤖 Agent processed: {agent_result}", flush=True)
+                except Exception as e:
+                    print(f"⚠️ LangGraph agent failed: {str(e)}", flush=True)
             
             # Auto-generate assessment
             # print(f"🤖 Auto-generating assessment for patient {patient.patient_id}...")
@@ -498,7 +555,7 @@ async def import_pdf_with_claude(
                     "medications_count": len(medications),
                     "specialist_assessments_count": len(specialist_assessments)
                 },
-                "assessment": assessment_result,
+                "assessment": None,
                 "filename": file.filename,
                 "powered_by": "Claude AI 🤖"
             }

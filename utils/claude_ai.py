@@ -24,8 +24,8 @@ class ClaudeAI:
             max_tokens = settings.CLAUDE_MAX_TOKENS if max_tokens is None else max_tokens
         
         self.client = anthropic.Anthropic(api_key=api_key)
-        self.model = model or "claude-sonnet-4-20250514"
-        self.max_tokens = max_tokens or 4096
+        self.model = model or "claude-sonnet-4-5"
+        self.max_tokens = max_tokens or 8096
     
     def parse_noraxon_emg_pdf(self, pdf_path: str) -> Dict:
         """
@@ -45,7 +45,7 @@ class ClaudeAI:
             prompt = f"""Extract data from this Noraxon EMG report.
 
 PDF TEXT:
-{pdf_text[:6000]}
+{pdf_text}
 
 CRITICAL EXTRACTION RULES:
 
@@ -139,7 +139,12 @@ Return ONLY this JSON (no markdown, no explanations):
             prompt = f"""You are an expert medical data extraction AI. Read this entire document and extract ALL useful rehabilitation/medical data.
 
 **CRITICAL LANGUAGE INSTRUCTION:** 
-Extract ALL medical text in RUSSIAN language. Only keep patient names in their original form.
+- Document may be in Russian, Kazakh, or mixed Russian/Kazakh
+- Extract ALL data regardless of which language it appears in
+- Return ALL medical text in RUSSIAN language
+- Only keep patient names in their original form
+- If field is in Kazakh → translate to Russian
+- If field is in Russian → keep as is
 - Medical conditions → Russian (e.g., "Down syndrome" → "Синдром Дауна")
 - Medications → Russian (e.g., "Sodium chloride" → "Натрия хлорид")
 - Procedures → Russian (e.g., "Hydrotherapy" → "Гидротерапия")
@@ -150,7 +155,7 @@ Extract ALL medical text in RUSSIAN language. Only keep patient names in their o
 - Progress descriptions → Russian
 
 DOCUMENT ({page_count} pages):
-{pdf_text}
+{pdf_text[:15000]}
 
 YOUR TASK:
 1. Read and understand the ENTIRE document
@@ -241,7 +246,7 @@ CRITICAL RULES:
 
             response = self.client.messages.create(
                 model=self.model,
-                max_tokens=4096,
+                max_tokens=self.max_tokens,
                 messages=[{"role": "user", "content": prompt}]
             )
             
@@ -261,16 +266,40 @@ CRITICAL RULES:
             print(f"❌ ERROR: {str(e)}")
             return {"error": f"Parsing failed: {str(e)}"}
     
-    def parse_excel_intelligently(self, excel_path: str) -> Dict:
-        """Parse Excel files with Russian medical text"""
+    def parse_excel_intelligently(self, excel_path: str, batch_size: int = 20) -> Dict:
+        """
+        Parse Excel files with Russian medical text.
+
+        FIXED: previously used `nrows=20`, which silently dropped every
+        patient past row 20 with no warning. Now reads the ENTIRE sheet
+        and processes it in batches of `batch_size` rows, so files with
+        more than 20 patients are no longer truncated. Results from all
+        batches are merged into a single patients list.
+        """
         try:
             excel_file = pd.ExcelFile(excel_path)
             first_sheet = excel_file.sheet_names[0]
-            df = pd.read_excel(excel_path, sheet_name=first_sheet, nrows=20)
-            
-            excel_preview = f"Sheet: {first_sheet}\n\n{df.to_string()}"
-            
-            prompt = f"""Extract patient rehabilitation data from this Excel file. Extract ALL available clinical test measurements, EMG data, and balance scores.
+
+            # Read the FULL sheet — no row limit
+            df = pd.read_excel(excel_path, sheet_name=first_sheet)
+            total_rows = len(df)
+            print(f"📊 Excel file has {total_rows} rows — processing in batches of {batch_size}")
+
+            all_patients = []
+            errors = []
+
+            # Process in batches so each Claude call stays a reasonable size
+            for start in range(0, total_rows, batch_size):
+                end = min(start + batch_size, total_rows)
+                batch_df = df.iloc[start:end]
+                batch_num = (start // batch_size) + 1
+                total_batches = (total_rows + batch_size - 1) // batch_size
+
+                print(f"   Batch {batch_num}/{total_batches} (rows {start+1}-{end})...")
+
+                excel_preview = f"Sheet: {first_sheet}\n\n{batch_df.to_string()}"
+
+                prompt = f"""Extract patient rehabilitation data from this Excel file. Extract ALL available clinical test measurements, EMG data, and balance scores.
 
 **LANGUAGE INSTRUCTION:** 
 Extract all medical text in RUSSIAN (diagnoses, procedures, notes, etc.). 
@@ -313,19 +342,34 @@ IMPORTANT:
 - Extract any medical terms/diagnoses in RUSSIAN if present
 - Return ONLY the JSON, no explanation."""
 
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            
-            response_text = response.content[0].text
-            json_str = self._extract_json(response_text)
-            result = json.loads(json_str)
-            
-            print(f"Extracted {len(result.get('patients', []))} patients")
+                try:
+                    response = self.client.messages.create(
+                        model=self.model,
+                        max_tokens=self.max_tokens,
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+
+                    response_text = response.content[0].text
+                    json_str = self._extract_json(response_text)
+                    batch_result = json.loads(json_str)
+
+                    batch_patients = batch_result.get('patients', [])
+                    all_patients.extend(batch_patients)
+                    print(f"   ✅ Batch {batch_num}: extracted {len(batch_patients)} patient(s)")
+
+                except Exception as batch_error:
+                    error_msg = f"Batch {batch_num} (rows {start+1}-{end}) failed: {str(batch_error)}"
+                    print(f"   ⚠️ {error_msg}")
+                    errors.append(error_msg)
+                    continue  # keep processing remaining batches even if one fails
+
+            print(f"Extracted {len(all_patients)} patients total from {total_rows} rows ({total_batches} batches)")
+
+            result = {"patients": all_patients}
+            if errors:
+                result["batch_errors"] = errors
             return result
-            
+
         except Exception as e:
             print(f"ERROR: Excel parsing error: {str(e)}")
             return {"patients": [], "error": str(e)}
@@ -536,7 +580,7 @@ CRITICAL INSTRUCTIONS:
 
             response = self.client.messages.create(
                 model=self.model,
-                max_tokens=4096,  # Increased for comprehensive data
+                max_tokens=self.max_tokens,  # Increased for comprehensive data
                 messages=[{"role": "user", "content": prompt}]
             )
             

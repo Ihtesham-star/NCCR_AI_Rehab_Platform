@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     
     # Claude AI API
     CLAUDE_API_KEY: str = "your-claude-api-key-here"
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
-    CLAUDE_MAX_TOKENS: int = 4096
+    CLAUDE_MODEL: str = "claude-sonnet-4-5"
+    CLAUDE_MAX_TOKENS: int = 8096
     
     # Data Paths
     DATA_IMPORT_PATH: str = "./data/import"
