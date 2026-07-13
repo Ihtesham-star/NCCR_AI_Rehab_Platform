@@ -1,4 +1,8 @@
 # NCCR AI Rehabilitation Platform
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-green)
+![Claude](https://img.shields.io/badge/Claude-Sonnet_4.5-orange)
+![RAGAS](https://img.shields.io/badge/RAGAS_Overall-0.729-brightgreen)
 
 **Astana, Kazakhstan**
 
@@ -13,6 +17,9 @@ Clinicians at NCCR collect data from multiple sources — EMG machines, balance 
 - Generates personalized weekly rehabilitation protocols per patient
 - Supports semantic search over patient documents via a RAG pipeline
 - Provides a clinician-facing dashboard for patient management and reporting
+
+## Demo
+![Dashboard](static/dashboard.png)
 
 ## Features
 
