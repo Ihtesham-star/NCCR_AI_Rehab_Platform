@@ -19,7 +19,7 @@ Clinicians at NCCR collect data from multiple sources — EMG machines, balance 
 - Provides a clinician-facing dashboard for patient management and reporting
 
 ## Demo
-![Dashboard](static/dashboard.png)
+![Dashboard](static/Dashboard.png)
 
 ## Features
 
