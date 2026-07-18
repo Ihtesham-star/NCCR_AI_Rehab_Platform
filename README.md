@@ -20,6 +20,9 @@ Clinicians at NCCR collect data from multiple sources — EMG machines, balance 
 
 ## Demo
 ![Dashboard](static/Dashboard.png)
+[![Watch the 3-minute demo](https://img.youtube.com/vi/NsZd0sSVqrQ/maxresdefault.jpg)](https://youtu.be/NsZd0sSVqrQ)
+
+▶ **[Watch the 3-minute demo](https://youtu.be/NsZd0sSVqrQ)** — a raw clinical document goes in, a structured assessment comes out.
 
 ## Features
 
